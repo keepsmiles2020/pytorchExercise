@@ -78,3 +78,21 @@ net = MLP().to(device)
 optimizer = optim.SGD(net.parameters(), lr=learning_rate)
 criteon = nn.CrossEntropyLoss().to(device)
 
+for epoch in range(epoches):
+
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data = data.view(-1, 28 * 28)
+        data, target = data.to(device), target.to(device)
+
+        logit = net(data)
+        loss = criteon(logit,target)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        if batch_idx % 100 ==0:
+            print('Train Epoech:{}[{}/{} ({:.0f}%)]\tLoss:{:.6f}'.format(
+                epoch,batch_idx*len(data),len(train_loader.dataset),
+                100.*batch_idx/len(train_loader),loss.item()
+            ))
+

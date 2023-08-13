@@ -85,14 +85,48 @@ for epoch in range(epoches):
         data, target = data.to(device), target.to(device)
 
         logit = net(data)
-        loss = criteon(logit,target)
+        loss = criteon(logit, target)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        if batch_idx % 100 ==0:
+        if batch_idx % 100 == 0:
             print('Train Epoech:{}[{}/{} ({:.0f}%)]\tLoss:{:.6f}'.format(
-                epoch,batch_idx*len(data),len(train_loader.dataset),
-                100.*batch_idx/len(train_loader),loss.item()
+                epoch, batch_idx * len(data), len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), loss.item()
             ))
+
+        # 用val_loader来测试，挑选最好的参数
+        test_loss = 0
+        correct = 0
+        for data, target in val_loader:
+            data = data.view(-1, 28 * 28)
+            data, target = data.to(device), target.to(device)
+            logits = net(data)
+            test_loss += criteon(logits, target).item()
+            pred = logits.data.max(1)[1]
+            correct += pred.eq(target.data).sum()
+        test_loss /= len(val_loader.dataset)
+        print('\nVAl set: Average loss:{:.4f},Accuracy:{}/{} ({:.0f}%)\n'.format(
+            test_loss, correct, len(val_loader), 100. * correct / len(val_loader.dataset)))
+
+test_loss = 0
+correct = 0
+for data, target in test_loader:
+    data = data.view(-1, 28 * 28)
+    data, target = data.to(device), target.to(device)
+    logits = net(data)
+    test_loss += criteon(logits, target)
+
+    pred = logits.data.max(1)[1]
+    correct += pred.eq(target.data).sum()
+
+    test_loss  /=len(test_loader.dataset)
+    print('\nTest set: Average loss:{:.4f},Accuracy:{}/{} ({.0f}%)\n'.format(
+        test_loss,correct,len(test_loader.dataset),
+        100. * correct/len(test_loader.dataset)
+
+    ))
+
+
 
